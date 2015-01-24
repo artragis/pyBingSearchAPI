@@ -21,13 +21,12 @@ I've mapped both " and ' to be the desired urlencoding to make it more python-es
 
 Example:
 
-    from bing_search_api import BingSearchAPI 
+    from bing_search_api import BingSearchAPI
     
     my_key = "[your key]"
-    query_string = "Your Query"
+    query_string = "Gandalf"
     bing = BingSearchAPI(my_key)
-    params = {'ImageFilters':'"Face:Face"',
-              '$format': 'json',
-              '$top': 10,
-              '$skip': 0}
-    print bing.search('image+web',query_string,params).json() # requests 1.0+ 
+    # prepare
+    query = bing.image().large().photo().take(25).skip(0) # will take the 25 first large photos
+    # execute
+    result = bing.search(query) # result is a well parsed json

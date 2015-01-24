@@ -1,9 +1,11 @@
-
 XML_RESPONSE = 'atom'
 JSON_RESPONSE = 'json'
 NO_ADULT_FILTERING = "Off"
 MODERATE_ADULT_FILTERING = "Moderate"
 STRICT_ADULT_FILTERING = "Strict"
+SHORT_VID = 300
+MEDIUM_VID = 12000
+LONG_VID = 42000
 
 class SearchSource():
     """This class represent the very basis of a search source. It
@@ -15,6 +17,10 @@ class SearchSource():
     _url = "https://api.datamarket.azure.com/Data.ashx/Bing/Search/v1/"
     _format = JSON_RESPONSE
     _first_query_char = '?'
+
+    def __init__(self):
+        self.format(JSON_RESPONSE)
+
     def query(self, query):
         """The search query as a raw data that can be represented as string"""
         self._filters['Query'] = "'" + query + "'" #query must be wrapped by quotes
@@ -122,7 +128,7 @@ class ImageSearch(SearchSource):
         self._url += "Image"
 
     def _build_image_filters(self):
-        temp = "+".join(key + ":" + value for (key, value) in self._build_image_filters())
+        temp = "+".join(key + ":" + value for (key, value) in self._image_filters)
         self._filters['ImageFilters'] = "'" + temp + "'"
 
     def large(self):
@@ -222,8 +228,69 @@ class ImageSearch(SearchSource):
 
 class VideoSearch(SearchSource):
 
+    _video_filters = {}
+
     def __init__(self):
         self._url += "Video"
+
+    def _build_video_filters(self):
+        temp = "+".join(key + ":" + value for (key, value) in self._video_filters)
+        self._filters['VideoFilters'] = "'" + temp + "'"
+
+    def low_resolution(self):
+        """Select only low resolution video"""
+        self._video_filters['Resolution'] = "Low"
+        self._build_video_filters()
+        return self
+
+    def standard_resolution(self):
+        """Select only stantard resolution video"""
+        self._video_filters['Resolution'] = "Medium"
+        self._build_video_filters()
+        return self
+
+    def high_resolution(self):
+        """Select only high resolution video"""
+        self._video_filters['Resolution'] = "High"
+        self._build_video_filters()
+        return self
+
+    def duration(self, seconds):
+        """
+        Select video by eliminating too short or too long vid
+        :param seconds: The number of second the video has to have. Please use LONG_VID, MEDIUM_VID and SHORT_VID
+        :return:
+        """
+        if seconds <= SHORT_VID:
+            self._video_filters['Duration'] = "Short"
+        elif seconds <= MEDIUM_VID:
+            self._video_filters['Duration'] = "Medium"
+        else:
+            self._video_filters['Duration'] = "Long"
+        self._build_video_filters()
+        return self
+
+    def standard_aspect(self):
+        """Select video of standard aspect ratio."""
+        self._video_filters['Aspect'] = "Standard"
+        self._build_video_filters()
+        return self
+
+    def widescreen_aspect(self):
+        """Select vidoes with widescreen aspect ratio."""
+        self._video_filters['Aspect'] = "Wide"
+        self._build_video_filters()
+        return self
+
+    def order_by_relevance(self):
+        """Sort videos by relevance from the query (most to least relevant)"""
+        self._filters['VideoSortBy'] = "Relevance"
+        return self
+
+    def order_by_date(self):
+        """Sort videos by chronilogical order (older to newer)"""
+        self._filters['VideoSortBy'] = "Date"
+
 
 
 class NewsSearch(SearchSource):
