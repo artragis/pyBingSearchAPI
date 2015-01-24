@@ -85,9 +85,9 @@ class SearchSource():
         Prevents Bing from inferring location from the terms of a query.
         """
         if "Options" in self._filters:
-            self._filters['Option'] += '+DisableLocationDetection'
+            self._filters['Options'] = self._filters[:-1] + "+DisableLocationDetection'"
         else:
-            self._filters['Option'] = 'DisableLocationDetection'
+            self._filters['Options'] = "'DisableLocationDetection'"
         return self
 
     def _replace_symbols(self, request):
@@ -120,6 +120,33 @@ class WebSearch(SearchSource):
 
     def __init__(self):
         self._url += "Web"
+
+    def web_file_type(self, type):
+        """
+        :param type: The extension you want to have must be DOC, DWF, FEED, HTM, HTML, PDF, PPT, RTF, TEXT, TXT, XLS
+        :return:
+        """
+        self._filters['WebFileType '] = type
+        return self
+
+    def disable_host_collapsing(self):
+        """Prevents Bing from suppressing results from the same top-level URL for a request."""
+        if "WebSearchOptions" in self._filters:
+            self._filters["WebSearchOptions"] = self._filters['WebSearchOptions'][:-1] + "+DisableHostCollapsing'"
+        else:
+            self._filters["WebSearchOptions"] = "'DisableHostCollapsing'"
+
+        return self
+
+    def disable_query_alteration(self):
+        """Prevents Bing from altering the query string. Such alteration may have been done to correct
+        apparent spelling error in the original query string. """
+        if "WebSearchOptions" in self._filters:
+            self._filters["WebSearchOptions"] = self._filters['WebSearchOptions'][:-1] + "+DisableQueryAlterations'"
+        else:
+            self._filters["WebSearchOptions"] = "'DisableQueryAlterations'"
+
+        return self
 
 
 class ImageSearch(SearchSource):
@@ -185,9 +212,9 @@ class ImageSearch(SearchSource):
         :return:
         """
         if colorized:
-            self._image_filters['Color'] = "Color"
+            self._image_filters['Color'] = "'Color'"
         else:
-            self._image_filters['Color'] = "Monochrome"
+            self._image_filters['Color'] = "'Monochrome'"
         self._build_image_filters()
         return self
 
@@ -195,7 +222,7 @@ class ImageSearch(SearchSource):
         """
         Select only photos
         """
-        self._image_filters['Style'] = "Photo"
+        self._image_filters['Style'] = "'Photo'"
         self._build_image_filters()
         return self
 
@@ -203,25 +230,25 @@ class ImageSearch(SearchSource):
         """
         Select graphics or illustrations
         """
-        self._image_filters['Style'] = "Graphics"
+        self._image_filters['Style'] = "'Graphics'"
         self._build_image_filters()
         return self
 
     def head_only(self):
         """get photos with head only (without shoulders, body...)"""
-        self._image_filters['Face'] = "Face"
+        self._image_filters['Face'] = "'Face'"
         self._build_image_filters()
         return self
 
     def head_and_shoulder(self):
         """get photos with portrait of head + shoulders"""
-        self._image_filters['Face'] = "Portrait"
+        self._image_filters['Face'] = "'Portrait'"
         self._build_image_filters()
         return self
 
     def any_subject(self):
         """get photos with faces but without any other restriction about the body, the landscape...)"""
-        self._image_filters['Face'] = "Other"
+        self._image_filters['Face'] = "'Other'"
         self._build_image_filters()
         return self
 
@@ -239,19 +266,19 @@ class VideoSearch(SearchSource):
 
     def low_resolution(self):
         """Select only low resolution video"""
-        self._video_filters['Resolution'] = "Low"
+        self._video_filters['Resolution'] = "'Low'"
         self._build_video_filters()
         return self
 
     def standard_resolution(self):
         """Select only stantard resolution video"""
-        self._video_filters['Resolution'] = "Medium"
+        self._video_filters['Resolution'] = "'Medium'"
         self._build_video_filters()
         return self
 
     def high_resolution(self):
         """Select only high resolution video"""
-        self._video_filters['Resolution'] = "High"
+        self._video_filters['Resolution'] = "'High'"
         self._build_video_filters()
         return self
 
@@ -262,41 +289,55 @@ class VideoSearch(SearchSource):
         :return:
         """
         if seconds <= SHORT_VID:
-            self._video_filters['Duration'] = "Short"
+            self._video_filters['Duration'] = "'Short'"
         elif seconds <= MEDIUM_VID:
-            self._video_filters['Duration'] = "Medium"
+            self._video_filters['Duration'] = "'Medium'"
         else:
-            self._video_filters['Duration'] = "Long"
+            self._video_filters['Duration'] = "'Long'"
         self._build_video_filters()
         return self
 
     def standard_aspect(self):
         """Select video of standard aspect ratio."""
-        self._video_filters['Aspect'] = "Standard"
+        self._video_filters['Aspect'] = "'Standard'"
         self._build_video_filters()
         return self
 
     def widescreen_aspect(self):
         """Select vidoes with widescreen aspect ratio."""
-        self._video_filters['Aspect'] = "Wide"
+        self._video_filters['Aspect'] = "'Wide'"
         self._build_video_filters()
         return self
 
     def order_by_relevance(self):
         """Sort videos by relevance from the query (most to least relevant)"""
-        self._filters['VideoSortBy'] = "Relevance"
+        self._filters['VideoSortBy'] = "'Relevance'"
         return self
 
     def order_by_date(self):
         """Sort videos by chronilogical order (older to newer)"""
-        self._filters['VideoSortBy'] = "Date"
+        self._filters['VideoSortBy'] = "'Date'"
 
 
 
 class NewsSearch(SearchSource):
 
     def __init__(self):
-        self._url += "News"
+        self._url += "'News'"
+
+    def category(self, category):
+        """Specify the category we have to retrieve"""
+        self._filters['NewsCategory'] = "'"+ category + "'"
+
+    def order_by_date(self):
+        """Sort news by chronological order"""
+        self._filters['NewsSortBy'] = "'Date'"
+        return self
+
+    def order_by_relevance(self):
+        """Sort news by the relevance from the query"""
+        self._filters['NewsSortBy'] = "'Relevance'"
+        return self
 
 
 class SpellingSearch(SearchSource):
