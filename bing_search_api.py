@@ -5,8 +5,9 @@ Inspired by https://github.com/mlagace/Python-SimpleBing and
 http://social.msdn.microsoft.com/Forums/pl-PL/windowsazuretroubleshooting/thread/450293bb-fa86-46ef-be7e-9c18dfb991ad
 '''
 
-import requests # Get from https://github.com/kennethreitz/requests
-import string
+import requests
+from SearchSources.sources import WebSearch, ImageSearch, VideoSearch, SpellingSearch, RelatedSearch, \
+    NewsSearch, CompositeSearch
 
 class BingSearchAPI():
     bing_api = "https://api.datamarket.azure.com/Data.ashx/Bing/Search/v1/Composite?"
@@ -14,42 +15,37 @@ class BingSearchAPI():
     def __init__(self, key):
         self.key = key
 
-    def replace_symbols(self, request):
-        # Custom urlencoder.
-        # They specifically want %27 as the quotation which is a single quote '
-        # We're going to map both ' and " to %27 to make it more python-esque
-        request = string.replace(request, "'", '%27')
-        request = string.replace(request, '"', '%27')
-        request = string.replace(request, '+', '%2b')
-        request = string.replace(request, ' ', '%20')
-        request = string.replace(request, ':', '%3a')
-        return request
-        
-    def search(self, sources, query, params):
-        ''' This function expects a dictionary of query parameters and values.
-            Sources and Query are mandatory fields. 
-            Sources is required to be the first parameter.
-            Both Sources and Query requires single quotes surrounding it.
-            All parameters are case sensitive. Go figure.
+    def image(self):
+        return ImageSearch()
 
-            For the Bing Search API schema, go to http://www.bing.com/developers/
-            Click on Bing Search API. Then download the Bing API Schema Guide
-            (which is oddly a word document file...pretty lame for a web api doc)
-        '''
-        request =  'Sources="' + sources    + '"'
-        request += '&Query="'  + str(query) + '"'
-        for key,value in params.iteritems():
-            request += '&' + key + '=' + str(value) 
-        request = self.bing_api + self.replace_symbols(request)
+    def web(self):
+        return WebSearch()
+
+    def video(self):
+        return VideoSearch()
+
+    def related(self):
+        return RelatedSearch()
+
+    def spell(self):
+        return SpellingSearch()
+
+    def news(self):
+        return NewsSearch()
+
+    def composite(self, sources):
+        """
+
+        :param sources: a list with all sources you want in "web", "image", "video", "news", "spell"
+        :return: a composite search source
+        """
+        return CompositeSearch("web" in sources, "image" in sources, "video" in sources,
+                               "news" in sources, "spell" in sources)
+
+    def search(self, source):
+        """
+        :param source: SearchSource well configured
+        :return: the result
+        """
+        request = self.bing_api + self.replace_symbols(source.build_query())
         return requests.get(request, auth=(self.key, self.key))
-
-
-if __name__ == "__main__":
-    my_key = "[your key]"
-    query_string = "Brad Pitt"
-    bing = BingSearchAPI(my_key)
-    params = {'ImageFilters':'"Face:Face"',
-              '$format': 'json',
-              '$top': 10,
-              '$skip': 0}
-    print bing.search('image+web',query_string,params).json() # requests 1.0+
