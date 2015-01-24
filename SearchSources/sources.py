@@ -84,7 +84,7 @@ class SearchSource():
             self._filters['Option'] = 'DisableLocationDetection'
         return self
 
-    def replace_symbols(self, request):
+    def _replace_symbols(self, request):
         """ Custom urlencoder.
          They specifically want %27 as the quotation which is a single quote '
          We're going to map both ' and " to %27 to make it more python-esque
@@ -106,7 +106,7 @@ class SearchSource():
             else:
                 final_url += '&'
             final_url += key + '=' + str(value)
-        return self._url + self.replace_symbols(final_url)
+        return self._url + self._replace_symbols(final_url)
 
 
 
@@ -117,9 +117,107 @@ class WebSearch(SearchSource):
 
 
 class ImageSearch(SearchSource):
-
+    _image_filters = {}
     def __init__(self):
         self._url += "Image"
+
+    def _build_image_filters(self):
+        temp = "+".join(key + ":" + value for (key, value) in self._build_image_filters())
+        self._filters['ImageFilters'] = "'" + temp + "'"
+
+    def large(self):
+        """Select only large size image"""
+        self._image_filters['Size'] = "Large"
+        self._build_image_filters()
+        return self
+
+    def medium(self):
+        """Select only medium size image"""
+        self._image_filters['Size'] = "Medium"
+        self._build_image_filters()
+        return self
+
+    def small(self):
+        """Select only small image"""
+        self._image_filters['Size'] = "Small"
+        self._build_image_filters()
+        return self
+
+    def width(self, width):
+        self._image_filters['Size'] = "Width:" + str(width)
+        self._build_image_filters()
+        return self
+
+    def height(self, height):
+        self._image_filters['Size'] = "Height:" + str(height)
+        self._build_image_filters()
+        return self
+
+    def square(self):
+        """Select only image whose aspect is square (width = height) if no aspect is specified this is used by
+        default"""
+        self._image_filters['Aspect'] = "Square"
+        self._build_image_filters()
+        return self
+
+    def widescreen(self):
+        """Select only image whose aspect is widescreen (landscape)"""
+        self._image_filters['Aspect'] = "Wide"
+        self._build_image_filters()
+        return self
+
+    def tall(self):
+        """Select only image whose aspect is in tall ration (portrait)"""
+        self._image_filters['Aspect'] = "Tall"
+        self._build_image_filters()
+        return self
+
+    def isColorized(self, colorized = True):
+        """
+        filter the image by chosing only colorized (colorized = True) or Monochrome (colorized = False)
+        :param colorized:
+        :return:
+        """
+        if colorized:
+            self._image_filters['Color'] = "Color"
+        else:
+            self._image_filters['Color'] = "Monochrome"
+        self._build_image_filters()
+        return self
+
+    def photo(self):
+        """
+        Select only photos
+        """
+        self._image_filters['Style'] = "Photo"
+        self._build_image_filters()
+        return self
+
+    def illustration(self):
+        """
+        Select graphics or illustrations
+        """
+        self._image_filters['Style'] = "Graphics"
+        self._build_image_filters()
+        return self
+
+    def head_only(self):
+        """get photos with head only (without shoulders, body...)"""
+        self._image_filters['Face'] = "Face"
+        self._build_image_filters()
+        return self
+
+    def head_and_shoulder(self):
+        """get photos with portrait of head + shoulders"""
+        self._image_filters['Face'] = "Portrait"
+        self._build_image_filters()
+        return self
+
+    def any_subject(self):
+        """get photos with faces but without any other restriction about the body, the landscape...)"""
+        self._image_filters['Face'] = "Other"
+        self._build_image_filters()
+        return self
 
 
 class VideoSearch(SearchSource):
@@ -149,18 +247,19 @@ class RelatedSearch(SearchSource):
 class CompositeSearch(WebSearch, ImageSearch, VideoSearch, NewsSearch, SpellingSearch):
 
     def __init__(self, web = True, image = False, video = False, news = False, spell = False ):
-        sources = ""
-
+        sources = "%27"
+        sources_list = []
         if web:
-            sources += "web+"
+            sources_list.append("web")
         if image:
-            sources += "image+"
+            sources_list.append("image")
         if video:
-            sources += "video+"
+            sources_list.append("video")
         if news:
-            sources += "news"
+            sources_list.append("news")
         if spell:
-            sources += "spell"
+            sources_list.append("spell")
 
+        sources += "%2B".join(sources_list) + "%27"
         self._url = "https://api.datamarket.azure.com/Data.ashx/Bing/Search/v1/Composite?Sources="+sources
         self._first_query_char = '&'
