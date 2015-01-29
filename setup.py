@@ -4,6 +4,7 @@ from setuptools import find_packages
 
 setup(
     name='pyBingSearchAPI',
+    packages=find_packages(),
     version='1',
 	install_requires=['requests'],
     url='https://github.com/artragis/pyBingSearchAPI',

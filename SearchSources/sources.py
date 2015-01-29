@@ -1,3 +1,4 @@
+# coding: utf-8
 XML_RESPONSE = 'atom'
 JSON_RESPONSE = 'json'
 NO_ADULT_FILTERING = "Off"
@@ -155,7 +156,8 @@ class ImageSearch(SearchSource):
         self._url += "Image"
 
     def _build_image_filters(self):
-        temp = "+".join(key + ":" + value for (key, value) in self._image_filters)
+        temp = "+".join(key + ":" 
+            + self._image_filters[key] for key in self._image_filters)
         self._filters['ImageFilters'] = "'" + temp + "'"
 
     def large(self):
@@ -261,7 +263,8 @@ class VideoSearch(SearchSource):
         self._url += "Video"
 
     def _build_video_filters(self):
-        temp = "+".join(key + ":" + value for (key, value) in self._video_filters)
+        temp = "+".join(key + ":" +\
+            self._video_filters[key] for key in self._video_filters)
         self._filters['VideoFilters'] = "'" + temp + "'"
 
     def low_resolution(self):
@@ -371,3 +374,4 @@ class CompositeSearch(WebSearch, ImageSearch, VideoSearch, NewsSearch, SpellingS
         sources += "%2B".join(sources_list) + "%27"
         self._url = "https://api.datamarket.azure.com/Data.ashx/Bing/Search/v1/Composite?Sources="+sources
         self._first_query_char = '&'
+

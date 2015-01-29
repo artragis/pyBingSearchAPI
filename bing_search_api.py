@@ -1,3 +1,4 @@
+# coding: utf-8
 '''
 This is designed for the new Azure Marketplace Bing Search API (released Aug 2012)
 
@@ -7,10 +8,9 @@ http://social.msdn.microsoft.com/Forums/pl-PL/windowsazuretroubleshooting/thread
 
 import requests
 from SearchSources.sources import WebSearch, ImageSearch, VideoSearch, SpellingSearch, RelatedSearch, \
-    NewsSearch, CompositeSearch
+    NewsSearch, CompositeSearch, JSON_RESPONSE, XML_RESPONSE
 
 class BingSearchAPI():
-    bing_api = "https://api.datamarket.azure.com/Data.ashx/Bing/Search/v1/Composite?"
     
     def __init__(self, key):
         self.key = key
@@ -45,7 +45,9 @@ class BingSearchAPI():
     def search(self, source):
         """
         :param source: SearchSource well configured
-        :return: the result
+        :return: the result as "Response" object
         """
-        request = self.bing_api + self.replace_symbols(source.build_query())
+        request = source.build_query()
         return requests.get(request, auth=(self.key, self.key))
+ 
+
